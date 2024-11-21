@@ -16,12 +16,14 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import os
 from dotenv import load_dotenv
+from flask_migrate import Migrate
 
 # Load environment variables
 load_dotenv()
 
 # Initialize SQLAlchemy instance - this should be the ONLY instance
 db = SQLAlchemy()
+migrate=Migrate()
 
 def create_app():
     app = Flask(__name__)
@@ -31,6 +33,7 @@ def create_app():
     
     # Initialize db with app
     db.init_app(app)
+    migrate.init_app(app,db)
     
     # Import routes after db initialization to avoid circular imports
     from app.routes import initialize_routes

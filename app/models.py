@@ -15,6 +15,16 @@ class Product(db.Model):
     price= db.Column(db.Float,  nullable=False)
     stock=db.Column(db.Integer, nullable=False)
 
+    # a function to jsonify the product's data
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'price': self.price,
+            'stock': self.stock,
+            'description': self.description if self.description else None
+        }
+
 
 class Cart(db.Model):
     id=db.Column(db.Integer, primary_key=True)

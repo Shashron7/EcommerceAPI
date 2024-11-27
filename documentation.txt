@@ -2,3 +2,8 @@ using SQLite
 using Migrations
 using Flask SQlalchemy
 using blueprints for writing modular code.
+using JWT for authentication 
+CSRF protection 
+
+
+

@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from app.models import Product, db
-
-
+from app.utils import login_required 
+from flask import session
 
 
 
@@ -29,13 +29,16 @@ def add_product():
     return jsonify({'message': 'Product added successfully'}), 201
 
 @products_blueprint.route('', methods=['GET'])
+@login_required
 def get_all_products():
-    products=Product.query.all() # Equivalent SQL query : SELECT * FROM products WHERE id = ?;
+    print("Session Data:", session)
+    products = Product.query.all()
     return jsonify([product.to_dict() for product in products]), 200
 
 
 
 @products_blueprint.route('/<int:product_id>', methods=['GET'])
+@login_required
 def get_product(product_id):
     product=Product.query.get(product_id)
     if not product:
@@ -44,6 +47,7 @@ def get_product(product_id):
     return jsonify(product.to_dict())
 
 @products_blueprint.route('<int:product_id>', methods=['PUT'])
+@login_required
 def update_product(product_id):
     product=Product.query.get(product_id)
     if not product:
@@ -59,6 +63,7 @@ def update_product(product_id):
     return jsonify({'message' : 'Product updated successfully'}), 200
 
 @products_blueprint.route('<int:product_id>', methods=['DELETE'])
+@login_required
 def delete_product(product_id):
     product=Product.query.get(product_id)
     if not product:

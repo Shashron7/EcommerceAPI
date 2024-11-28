@@ -17,8 +17,7 @@ from flask_sqlalchemy import SQLAlchemy
 import os
 from dotenv import load_dotenv
 from flask_migrate import Migrate
-from flask_jwt_extended import JWTManager 
-
+from flask_session import Session
 # Load environment variables
 load_dotenv()
 
@@ -28,13 +27,11 @@ migrate=Migrate()
 
 def create_app():
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+    app.config['SECRET_KEY'] = 'your-secret-key' # For Flask sessions
+    app.config['SESSION_TYPE']='filesystem'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ecommerce.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['SECRET_KEY']='your-secret-key'
-    app.config['JWT_SECRET_KEY']='your-jwt-secret-key'
-
-    jwt=JWTManager(app)
+    Session(app)
     
     # Initialize db with app
     db.init_app(app)

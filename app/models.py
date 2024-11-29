@@ -1,7 +1,7 @@
 from app import db
 from flask_bcrypt import Bcrypt
 
-bcrypt=Bcrypt()
+# bcrypt=Bcrypt()
 
 class User(db.Model):
     id=db.Column(db.Integer, primary_key=True)
@@ -38,14 +38,17 @@ class Product(db.Model):
 class Cart(db.Model):
     id=db.Column(db.Integer, primary_key=True)
     user_id=db.Column(db.Integer, db.ForeignKey('user.id'))
-    items=db.relationship('CartItem', backref='cart', lazy=True)
+    items=db.relationship('CartItem', backref='cart', lazy=True) # need some clarity on this 
 
 
 class CartItem(db.Model):
-    id=db.Column(db.Integer, primary_key=True)
-    cart_id=db.Column(db.Integer, db.ForeignKey('cart.id'), nullable=False)
-    product_id=db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
-    quantity=db.Column(db.Integer, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    cart_id = db.Column(db.Integer, db.ForeignKey('cart.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    __table_args__ = (
+        db.UniqueConstraint('cart_id', 'product_id', name='unique_cart_product'),
+    )
 
 
 

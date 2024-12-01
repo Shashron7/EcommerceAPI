@@ -45,7 +45,7 @@ def login():
 
     # Find user in the database
     user = User.query.filter_by(username=username).first()
-    if not user or user.password != password:  # Hash comparison recommended
+    if not user or user.password != password:  
         return jsonify({"error": "Invalid username or password"}), 401
 
     # Create a session

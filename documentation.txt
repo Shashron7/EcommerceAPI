@@ -6,4 +6,8 @@ using JWT for authentication
 CSRF protection 
 
 
+edge case:
+1) if one product is added with same name, price and description, just update the quantity instead of adding a new product
 
+
+Keep one admin login endpoint

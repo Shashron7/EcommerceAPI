@@ -5,7 +5,7 @@ from app.utils import login_required
 
 cart_blueprint = Blueprint('cart', __name__)
 
-
+#Login required for authorized access only
 
 @cart_blueprint.route('', methods=['GET'])
 @login_required
@@ -35,12 +35,12 @@ def get_cart_items():
 
 
 @cart_blueprint.route('/add', methods=['POST'])
-@login_required   #Authorized access only 
+@login_required    
 def add_to_cart():
     
     user_id=session['user_id'] #getting user data from session
     data=request.get_json()
-
+    print('user_id is ', user_id)
     product_id=data.get('product_id')
     quantity=data.get('quantity', 1) #default is 1
 
@@ -84,3 +84,35 @@ def add_to_cart():
         }
     }), 200
 
+
+@cart_blueprint.route('/remove', methods=['DELETE'])
+@login_required
+def remove_from_cart():
+    user_id=session['user_id']
+    data=request.get_json()
+    product_id=data.get('product_id')
+    if not product_id:
+        return jsonify({"error" : "Product ID is required"}), 400
+    
+    cart=Cart.query.filter_by(user_id=user_id).first()
+
+    if not cart:
+        return jsonify({"message" : "Cart is empty"}), 404
+    
+    #Find the item in the cart
+
+    cart_item=CartItem.query.filter_by(cart_id=cart.id, product_id=product_id).first()
+
+    if not cart_item:
+        return jsonify({"message" : "Product not found int cart"}), 404
+    
+    db.session.delete(cart_item)
+    db.session.commit()
+
+
+    return jsonify({"message" : "Product removed from cart successfully"})
+    
+
+
+
+    

@@ -2,12 +2,14 @@ from flask import Blueprint, jsonify, request
 from app.models import Product, db
 from app.utils import login_required 
 from flask import session
+from app.utils import admin_required
 
 
 
 products_blueprint=Blueprint('products', __name__) #defining the blueprint of the product
 
 @products_blueprint.route('', methods=['POST'])
+@admin_required
 def add_product():
     data = request.json
     name=data.get('name')
@@ -46,6 +48,7 @@ def get_product(product_id):
     return jsonify(product.to_dict())
 
 @products_blueprint.route('<int:product_id>', methods=['PUT'])
+@admin_required
 def update_product(product_id):
     product=Product.query.get(product_id)
     if not product:
@@ -61,6 +64,7 @@ def update_product(product_id):
     return jsonify({'message' : 'Product updated successfully'}), 200
 
 @products_blueprint.route('<int:product_id>', methods=['DELETE'])
+@admin_required
 def delete_product(product_id):
     product=Product.query.get(product_id)
     if not product:
@@ -73,3 +77,14 @@ def delete_product(product_id):
 
 
 
+@products_blueprint.route('<string:product_name>', methods=['GET'])
+@login_required
+def get_product_by_name(product_name):
+    products= Product.query.filter(Product.name.ilike(f"%{product_name}%")).all()
+
+    if products:
+        return jsonify([product.to_dict() for product in products]), 200
+    else:
+        return jsonify({"message" : "No products found"}), 404
+
+    

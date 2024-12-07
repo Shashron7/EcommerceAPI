@@ -104,7 +104,7 @@ def remove_from_cart():
     cart_item=CartItem.query.filter_by(cart_id=cart.id, product_id=product_id).first()
 
     if not cart_item:
-        return jsonify({"message" : "Product not found int cart"}), 404
+        return jsonify({"message" : "Product not found in cart"}), 404
     
     db.session.delete(cart_item)
     db.session.commit()
@@ -115,4 +115,38 @@ def remove_from_cart():
 
 
 
+@cart_blueprint.route('/summary', methods=['GET'])
+@login_required
+def summarise():
+    user_id=session['user_id']
+    cart=Cart.query.filter_by(user_id=user_id).first() #get the cart from the user id
+    if not cart:
+        return jsonify({"message": "Cart is empty"}), 400
     
+    cart_items=CartItem.query.filter_by(cart_id=cart.id).all()
+
+    cart_data =[]
+
+    total_cost=0
+    for item in cart_items:
+        product=Product.query.get(item.product_id)
+        if not product :
+            continue
+
+        item_total=product.price*item.quantity
+        total_cost+=item_total
+
+        cart_data.append(
+            {
+                "Product Name" : product.name,
+                "Quantity" : item.quantity,
+                "Price per Unit" : product.price, 
+                "Total Price" : item_total
+            }
+        )
+
+    
+    return jsonify({"Cart Summary" : cart_data, "Total Cost" : total_cost}), 200
+    
+
+

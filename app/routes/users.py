@@ -5,6 +5,7 @@ from flask_jwt_extended import create_access_token
 from flask_jwt_extended import jwt_required
 from flask_jwt_extended import get_jwt_identity
 from flask import session
+from app.utils import login_required
 
 users_blueprint=Blueprint('users', __name__)
 
@@ -59,3 +60,38 @@ def login():
 def logout():
     session.clear()  # Clears all session data
     return jsonify(message="Logged out successfully"), 200
+
+
+
+@users_blueprint.route('/wallet', methods=['GET'])
+@login_required
+def view_wallet():
+    user_id=session['user_id']
+    user=User.query.get(user_id)
+    if not user:
+        return jsonify({"Message" : "User not found"}), 404
+    
+    return jsonify({"Wallet_Balance" : user.wallet_balance}), 200
+
+
+
+@users_blueprint.route('/wallet/add', methods=['POST'])
+@login_required
+def add_balance():
+    user_id = session['user_id']
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"message": "User not found"}), 404
+
+    data = request.json
+    amount = data.get('amount', 0)
+
+    if amount <= 0:
+        return jsonify({"message": "Invalid amount"}), 400
+
+    if user.wallet_balance is None:
+        user.wallet_balance=0.0
+    user.wallet_balance += amount
+    db.session.commit()
+
+    return jsonify({"message": "Balance updated", "wallet_balance": user.wallet_balance}), 200

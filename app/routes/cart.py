@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, session, request
 from app.models import Cart, CartItem, Product
 from app import db
 from app.utils import login_required
+import stripe
 
 cart_blueprint = Blueprint('cart', __name__)
 
@@ -148,5 +149,3 @@ def summarise():
     
     return jsonify({"Cart Summary" : cart_data, "Total Cost" : total_cost}), 200
     
-
-

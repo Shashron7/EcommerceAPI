@@ -1,5 +1,7 @@
 from app import db
 from flask_bcrypt import Bcrypt
+from datetime import datetime
+
 
 # bcrypt=Bcrypt()
 
@@ -52,6 +54,15 @@ class CartItem(db.Model):
         db.UniqueConstraint('cart_id', 'product_id', name='unique_cart_product'),
     )
 
+
+
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    total_price = db.Column(db.Float, nullable=False)
+    purchase_date = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 

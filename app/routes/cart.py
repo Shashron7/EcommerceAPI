@@ -1,8 +1,8 @@
 from flask import Blueprint, jsonify, session, request
-from app.models import Cart, CartItem, Product
+from app.models import Cart, CartItem, Product, User, Order
 from app import db
 from app.utils import login_required
-import stripe
+from datetime import datetime
 
 cart_blueprint = Blueprint('cart', __name__)
 
@@ -149,3 +149,77 @@ def summarise():
     
     return jsonify({"Cart Summary" : cart_data, "Total Cost" : total_cost}), 200
     
+
+@cart_blueprint.route('checkout', methods=['GET'])
+@login_required
+def checkout():
+    user_id=session['user_id']
+    
+    user = User.query.get(user_id)
+    cart=Cart.query.filter_by(user_id=user_id).first()
+
+    if not cart:
+        return jsonify({"message" : "Cart is empty"}), 404
+    
+    cart_items=CartItem.query.filter_by(cart_id=cart.id).all()
+
+    total_cost=0
+    for item in cart_items:
+        curr_prod=Product.query.get(item.product_id)
+        total_cost += curr_prod.price * item.quantity
+
+        order =Order(
+            user_id=user_id,
+            product_id=curr_prod.id,
+            quantity=item.quantity,
+            total_price=item.quantity * curr_prod.price,
+            purchase_date=datetime.utcnow()
+        )
+
+        db.session.add(order)
+
+        
+
+
+
+    if user.wallet_balance < total_cost :
+        return jsonify({"Message" : "Insufficient Balance, add funds to your wallet"}), 400
+    
+
+    user.wallet_balance-=total_cost
+    db.session.commit() #commiting changes
+
+    CartItem.query.filter_by(cart_id=cart.id).delete()
+    db.session.commit()
+    
+    
+    return jsonify({
+        "message": "Payment successful",
+        "remaining_balance": user.wallet_balance
+    }), 200
+    
+    
+
+
+@cart_blueprint.route('/history', methods=['GET'])
+@login_required
+def order_history():
+    user_id = session['user_id']
+    orders = Order.query.filter_by(user_id=user_id).all()
+
+    if not orders:
+        return jsonify({"message": "No purchase history found"}), 404
+
+    order_data = []
+    for order in orders:
+        product = Product.query.get(order.product_id)
+        order_data.append({
+            "Product Name": product.name if product else "Unknown Product",
+            "Quantity": order.quantity,
+            "Total Price": order.total_price,
+            "Purchase Date": order.purchase_date.strftime("%Y-%m-%d %H:%M:%S")
+        })
+
+    return jsonify({"Purchase History": order_data}), 200
+
+

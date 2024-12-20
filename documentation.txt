@@ -11,3 +11,8 @@ edge case:
 
 
 Keep one admin login endpoint
+
+go inside instance and then use
+sqlite3 ecommerce.db
+.schema table_name
+.tables
